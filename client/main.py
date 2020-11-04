@@ -12,11 +12,16 @@ def on_connect(client, userdata, flags, rc):
 def on_message(client, userdata, msg):
     print(userdata, msg.payload)
 
+USERID = "nwjbrandon"
+PASSWORD = "password"
+
 def setup(hostname):
     client = mqtt.Client()
+    client.connect(hostname, 1883, 60)
+    client.username_pw_set(USERID, PASSWORD)
+    client.tls_set("/home/pi/secrets/ca.pem", "/home/pi/secrets/client.crt", "/home/pi/secrets/client.key")
     client.on_connect = on_connect
     client.on_message = on_message
-    client.connect(hostname)
     client.loop_start()
     return client
 
