@@ -1,5 +1,5 @@
 *.swp
 env/
-*.txt
-*.tflite
+tflite/*.txt
+tflite/*.tflite
 *.zip

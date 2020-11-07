@@ -8,7 +8,7 @@ python3.7 -m virtualenv env
 python3.7 -m pip install --upgrade pip
 ```
 
-### RPI
+### Tensorflow Lite RPI
 ```
 sudo apt-get install build-essential
 git clone https://github.com/tensorflow/tensorflow.git tensorflow_src
@@ -17,7 +17,7 @@ cd tensorflow_src && ./tensorflow/lite/tools/make/download_dependencies.sh
 python3.7 -m pip install https://github.com/google-coral/pycoral/releases/download/release-frogfish/tflite_runtime-2.5.0-cp37-cp37m-linux_armv7l.whl
 ```
 
-### ARM64
+### Tensorflow Lite ARM64
 ```
 sudo apt-get install build-essential
 ./tensorflow/lite/tools/make/download_dependencies.sh
@@ -25,7 +25,7 @@ sudo apt-get install build-essential
 python3.7 -m pip install https://github.com/google-coral/pycoral/releases/download/release-frogfish/tflite_runtime-2.5.0-cp37-cp37m-linux_x86_64.whl
 ```
 
-### Test RPI Camera
+### Yolo5 RPI Camera
 ```
 python3.7 -m pip install opencv-python
 sudo apt-get install -y libatlas-base-dev libhdf5-dev libhdf5-serial-dev libatlas-base-dev libjasper-dev  libqtgui4  libqt4-test
@@ -34,7 +34,7 @@ unzip coco_ssd_mobilenet_v1_1.0_quant_2018_06_29.zip
 python3.7 main.py --modeldir ./
 ```
 
-### Test ARM64
+### Yolov5 ARM64
 ```
 python3.7 -m pip install opencv-python
 wget https://storage.googleapis.com/download.tensorflow.org/models/tflite/coco_ssd_mobilenet_v1_1.0_quant_2018_06_29.zip
