@@ -6,7 +6,6 @@ sudo apt install python3.7 python3.7-dev python3-pip
 python3.7 -m pip install virtualenv
 python3.7 -m virtualenv env
 python3.7 -m pip install --upgrade pip
-python3.7 -m pip install opencv-python
 ```
 
 ### RPI
@@ -26,11 +25,21 @@ sudo apt-get install build-essential
 python3.7 -m pip install https://github.com/google-coral/pycoral/releases/download/release-frogfish/tflite_runtime-2.5.0-cp37-cp37m-linux_x86_64.whl
 ```
 
-### Test
+### Test RPI Camera
 ```
+python3.7 -m pip install opencv-python
+sudo apt-get install -y libatlas-base-dev libhdf5-dev libhdf5-serial-dev libatlas-base-dev libjasper-dev  libqtgui4  libqt4-test
 wget https://storage.googleapis.com/download.tensorflow.org/models/tflite/coco_ssd_mobilenet_v1_1.0_quant_2018_06_29.zip
 unzip coco_ssd_mobilenet_v1_1.0_quant_2018_06_29.zip
-python3.7 main.py --modeldir ./coco_ssd_mobilenet_v1_1.0_quant_2018_06_29/
+python3.7 main.py --modeldir ./
+```
+
+### Test ARM64
+```
+python3.7 -m pip install opencv-python
+wget https://storage.googleapis.com/download.tensorflow.org/models/tflite/coco_ssd_mobilenet_v1_1.0_quant_2018_06_29.zip
+unzip coco_ssd_mobilenet_v1_1.0_quant_2018_06_29.zip
+python3.7 main.py --modeldir ./
 ```
 
 ### References
