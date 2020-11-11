@@ -3,3 +3,4 @@ env/
 tflite/*.txt
 tflite/*.tflite
 *.zip
+__pycache__/

@@ -1,6 +1,8 @@
 from bluepy.btle import UUID, Peripheral, AssignedNumbers
 import struct
-
+from kalman import Kalman
+import time
+from madgwick import Madgwick
 # Sensortag versions
 AUTODETECT = "-"
 SENSORTAG_V1 = "v1"
@@ -213,25 +215,34 @@ class SensorTag(Peripheral):
 
 
 def main():
-    import time
+    sensorfusion = Kalman()
 
     print('Connecting to sensortag...')
     tag = SensorTag(macAddress)
     print("connected.")
+
     tag.accelerometer.enable()
     tag.magnetometer.enable()
     tag.gyroscope.enable()
 
     time.sleep(1.0)  # Loading sensors
-    count = 0
+
+    prev_time = time.time()
     while True:
-        acc = tag.accelerometer.read()
-        gyr = tag.gyroscope.read()
-        mag = tag.magnetometer.read()
-        count += 1
-        print("acc " +str(count) + ": " + str(acc))
-        print("gyr " + str(count) + ": " + str(gyr))
-        print("mag " + str(count) + ": " + str(mag))
+        ax, ay, az = tag.accelerometer.read()
+        gx, gy, gz = tag.gyroscope.read()
+        mx, my, mz = tag.magnetometer.read()
+
+        curr_time = time.time()
+        dt = curr_time - prev_time
+
+        # print(gz, mx, my, mz)
+
+        sensorfusion.computeAndUpdateRollPitchYaw(ax, ay, az, gx, gy, gz, mx, my, mz, dt)
+
+        print("roll:{0} pitch:{1} yaw:{2} ".format(sensorfusion.roll, sensorfusion.pitch, sensorfusion.yaw))
+
+        prev_time = curr_time
 
     print("Battery: ", tag.battery.read())
 
