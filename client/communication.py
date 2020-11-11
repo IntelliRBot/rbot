@@ -223,7 +223,8 @@ class SensorTag(Peripheral):
 
 
 def main():
-    sensorfusion = DcmAlgorithm()
+    # sensorfusion = DcmAlgorithm()
+    sensorfusion = Kalman()
 
     print("Connecting to sensortag...")
     tag = SensorTag(macAddress)
@@ -244,11 +245,17 @@ def main():
         curr_time = time.time()
         dt = curr_time - prev_time
 
-        sensorfusion.update(dt, gx, gy, gz, ax, ay, az, mx, my, mz)
+        # sensorfusion.update(dt, gx, gy, gz, ax, ay, az, mx, my, mz)
+        sensorfusion.computeAndUpdateRollPitchYaw(ax, ay, az, gx, gy, gz, mx, my, mz, dt)
 
+        # print(
+        #     "roll:{0} pitch:{1} yaw:{2} ".format(
+        #         sensorfusion.getRoll(), sensorfusion.getPitch(), sensorfusion.getYaw()
+        #     )
+        # )
         print(
             "roll:{0} pitch:{1} yaw:{2} ".format(
-                sensorfusion.getRoll(), sensorfusion.getPitch(), sensorfusion.getYaw()
+                sensorfusion.roll, sensorfusion.pitch, sensorfusion.yaw
             )
         )
 

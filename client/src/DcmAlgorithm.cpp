@@ -8,9 +8,9 @@
 #define CONSTRAIN(amt, low, high) ((amt)<(low)?(low):((amt)>(high)?(high):(amt)))
 
 // Propirtional (P) and Integrator (I) terms for the PID controller.
-#define ROLL_PITCH_KP 0.001f
+#define ROLL_PITCH_KP 1f
 #define ROLL_PITCH_KI 0.0f
-#define YAW_KP        0.1f
+#define YAW_KP        1f
 #define YAW_KI        0.0f
 
 DcmAlgorithm::DcmAlgorithm() {
