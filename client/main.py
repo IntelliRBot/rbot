@@ -1,6 +1,7 @@
-import paho.mqtt.client as mqtt
-import time
 import json
+import time
+
+import paho.mqtt.client as mqtt
 
 USERID = "nwjbrandon"
 PASSWORD = "password"
@@ -8,15 +9,16 @@ USERNAME = "nwjbrandon"
 CA_PEM = f"/home/{USERNAME}/secrets/ca.pem"
 CLIENT_CRT = f"/home/{USERNAME}/secrets/client.crt"
 CLIENT_KEY = f"/home/{USERNAME}/secrets/client.key"
-BROKER_IP = "192.168.50.190" #"192.168.50.247" # IP of raspi
+BROKER_IP = "192.168.50.190"  # "192.168.50.247" # IP of raspi
 STATUS = 1
+
 
 def on_connect(client, userdata, flags, rc):
     if rc == 0:
         print("Successfully connected to broker")
         client.subscribe("/train/status")
     else:
-        print("Connection failed with code: %d" %rc)
+        print("Connection failed with code: %d" % rc)
 
 
 def train_model():
@@ -31,13 +33,14 @@ def on_message(client, userdata, msg):
         try:
             train_model()
             print("Done")
-            payload = {"episode_status":1}
+            payload = {"episode_status": 1}
             client.publish("/episode/status", json.dumps(payload))
         except:
-            payload = {"episode_status":0}
+            payload = {"episode_status": 0}
             client.publish("/episode/status", json.dumps(payload))
     else:
         STATUS = 0
+
 
 def setup(hostname):
     client = mqtt.Client()
@@ -49,13 +52,15 @@ def setup(hostname):
     client.loop_start()
     return client
 
+
 def main():
     client = setup(BROKER_IP)
-    while True: 
+    while True:
         if STATUS == 0:
             print("Shutting down")
             time.sleep(3)
             break
+
 
 if __name__ == "__main__":
     main()

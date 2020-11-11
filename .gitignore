@@ -4,3 +4,7 @@ tflite/*.txt
 tflite/*.tflite
 *.zip
 __pycache__/
+build/
+*.so
+*.cxx
+dcm.py

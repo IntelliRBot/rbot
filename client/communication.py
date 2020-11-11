@@ -1,16 +1,20 @@
-from bluepy.btle import UUID, Peripheral, AssignedNumbers
 import struct
-from kalman import Kalman
 import time
-from madgwick import Madgwick
+
+from bluepy.btle import UUID, AssignedNumbers, Peripheral
+from kalman import Kalman
+from src.dcm import DcmAlgorithm
+
 # Sensortag versions
 AUTODETECT = "-"
 SENSORTAG_V1 = "v1"
 SENSORTAG_2650 = "CC2650"
 macAddress = "54:6C:0E:53:33:31"
 
+
 def _TI_UUID(val):
     return UUID("%08X-0451-4000-b000-000000000000" % (0xF0000000 + val))
+
 
 class SensorBase:
     # Derived classes should set: svcUUID, ctrlUUID, dataUUID
@@ -56,8 +60,8 @@ class AccelerometerSensor(SensorBase):
             self.scale = 16.0
 
     def read(self):
-        '''Returns (x_accel, y_accel, z_accel) in units of g'''
-        x_y_z = struct.unpack('bbb', self.data.read())
+        """Returns (x_accel, y_accel, z_accel) in units of g"""
+        x_y_z = struct.unpack("bbb", self.data.read())
         return tuple([(val / self.scale) for val in x_y_z])
 
 
@@ -105,13 +109,13 @@ class AccelerometerSensorMPU9250:
         self.sensor.disable(self.bits)
 
     def read(self):
-        '''Returns (x_accel, y_accel, z_accel) in units of g'''
+        """Returns (x_accel, y_accel, z_accel) in units of g"""
         rawVals = self.sensor.rawRead()[3:6]
         return tuple([v * self.scale for v in rawVals])
 
 
 class MagnetometerSensor(SensorBase):
-    svcUUID  = _TI_UUID(0xAA30)
+    svcUUID = _TI_UUID(0xAA30)
     dataUUID = _TI_UUID(0xAA31)
     ctrlUUID = _TI_UUID(0xAA32)
 
@@ -119,10 +123,11 @@ class MagnetometerSensor(SensorBase):
         SensorBase.__init__(self, periph)
 
     def read(self):
-        '''Returns (x, y, z) in uT units'''
-        x_y_z = struct.unpack('<hhh', self.data.read())
-        return tuple([ 1000.0 * (v/32768.0) for v in x_y_z ])
+        """Returns (x, y, z) in uT units"""
+        x_y_z = struct.unpack("<hhh", self.data.read())
+        return tuple([1000.0 * (v / 32768.0) for v in x_y_z])
         # Revisit - some absolute calibration is needed
+
 
 class MagnetometerSensorMPU9250:
     def __init__(self, sensor_):
@@ -137,9 +142,10 @@ class MagnetometerSensorMPU9250:
         self.sensor.disable(self.sensor.MAG_XYZ)
 
     def read(self):
-        '''Returns (x_mag, y_mag, z_mag) in units of uT'''
+        """Returns (x_mag, y_mag, z_mag) in units of uT"""
         rawVals = self.sensor.rawRead()[6:9]
-        return tuple([ v*self.scale for v in rawVals ])
+        return tuple([v * self.scale for v in rawVals])
+
 
 class GyroscopeSensor(SensorBase):
     svcUUID = _TI_UUID(0xAA50)
@@ -151,8 +157,8 @@ class GyroscopeSensor(SensorBase):
         SensorBase.__init__(self, periph)
 
     def read(self):
-        '''Returns (x,y,z) rate in deg/sec'''
-        x_y_z = struct.unpack('<hhh', self.data.read())
+        """Returns (x,y,z) rate in deg/sec"""
+        x_y_z = struct.unpack("<hhh", self.data.read())
         return tuple([250.0 * (v / 32768.0) for v in x_y_z])
 
 
@@ -168,23 +174,25 @@ class GyroscopeSensorMPU9250:
         self.sensor.disable(self.sensor.GYRO_XYZ)
 
     def read(self):
-        '''Returns (x_gyro, y_gyro, z_gyro) in units of degrees/sec'''
+        """Returns (x_gyro, y_gyro, z_gyro) in units of degrees/sec"""
         rawVals = self.sensor.rawRead()[0:3]
         return tuple([v * self.scale for v in rawVals])
 
+
 class BatterySensor(SensorBase):
-    svcUUID  = UUID("0000180f-0000-1000-8000-00805f9b34fb")
+    svcUUID = UUID("0000180f-0000-1000-8000-00805f9b34fb")
     dataUUID = UUID("00002a19-0000-1000-8000-00805f9b34fb")
     ctrlUUID = None
     sensorOn = None
 
     def __init__(self, periph):
-       SensorBase.__init__(self, periph)
+        SensorBase.__init__(self, periph)
 
     def read(self):
-        '''Returns the battery level in percent'''
+        """Returns the battery level in percent"""
         val = ord(self.data.read())
         return val
+
 
 class SensorTag(Peripheral):
     def __init__(self, addr, version=AUTODETECT):
@@ -200,7 +208,7 @@ class SensorTag(Peripheral):
         if len(fwVers) >= 1:
             self.firmwareVersion = fwVers[0].read().decode("utf-8")
         else:
-            self.firmwareVersion = u''
+            self.firmwareVersion = ""
 
         if version == SENSORTAG_V1:
             self.accelerometer = AccelerometerSensor(self)
@@ -215,9 +223,9 @@ class SensorTag(Peripheral):
 
 
 def main():
-    sensorfusion = Kalman()
+    sensorfusion = DcmAlgorithm()
 
-    print('Connecting to sensortag...')
+    print("Connecting to sensortag...")
     tag = SensorTag(macAddress)
     print("connected.")
 
@@ -236,11 +244,13 @@ def main():
         curr_time = time.time()
         dt = curr_time - prev_time
 
-        # print(gz, mx, my, mz)
+        sensorfusion.update(dt, gx, gy, gz, ax, ay, az, mx, my, mz)
 
-        sensorfusion.computeAndUpdateRollPitchYaw(ax, ay, az, gx, gy, gz, mx, my, mz, dt)
-
-        print("roll:{0} pitch:{1} yaw:{2} ".format(sensorfusion.roll, sensorfusion.pitch, sensorfusion.yaw))
+        print(
+            "roll:{0} pitch:{1} yaw:{2} ".format(
+                sensorfusion.getRoll(), sensorfusion.getPitch(), sensorfusion.getYaw()
+            )
+        )
 
         prev_time = curr_time
 
@@ -249,4 +259,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
