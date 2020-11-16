@@ -48,9 +48,9 @@ class Motor:
         GPIO.cleanup()
 
     def set_direction(self, direction):
-        if direction == DIRECTION.FORWARD:
+        if direction == FORWARD:
             self._forward()
-        if direction == DIRECTION.STOP:
+        if direction == STOP:
             self._stop()
-        if direction == DIRECTION.BACKWARD:
+        if direction == BACKWARD:
             self._backward()

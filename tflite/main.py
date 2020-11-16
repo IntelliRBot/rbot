@@ -17,7 +17,6 @@ import argparse
 import importlib.util
 # Import packages
 import os
-import sys
 import time
 from threading import Thread
 
@@ -33,9 +32,9 @@ class VideoStream:
     def __init__(self, resolution=(640, 480), framerate=30):
         # Initialize the PiCamera and the camera image stream
         self.stream = cv2.VideoCapture(0)
-        ret = self.stream.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc(*"MJPG"))
-        ret = self.stream.set(3, resolution[0])
-        ret = self.stream.set(4, resolution[1])
+        # ret = self.stream.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc(*"MJPG"))
+        # ret = self.stream.set(3, resolution[0])
+        # ret = self.stream.set(4, resolution[1])
 
         # Read first frame from the stream
         (self.grabbed, self.frame) = self.stream.read()

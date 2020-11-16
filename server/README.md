@@ -1,4 +1,5 @@
 ## Server
+Send commands to robot to train to balance or to demo
 
 ### Setup
 ```

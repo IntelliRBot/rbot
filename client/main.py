@@ -54,7 +54,7 @@ def setup(hostname):
 
 
 def main():
-    client = setup(BROKER_IP)
+    setup(BROKER_IP)
     while True:
         if STATUS == 0:
             print("Shutting down")

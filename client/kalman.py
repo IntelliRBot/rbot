@@ -371,7 +371,7 @@ class Kalman:
             + errorMatrix
         )
 
-        difference = measurement - np.matmul(np.array([1.0, 1.0]), prediction)
+        # difference = measurement - np.matmul(np.array([1.0, 1.0]), prediction)
 
         measurementCovariance = (
             np.matmul(

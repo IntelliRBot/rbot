@@ -3,7 +3,6 @@ import time
 
 from bluepy.btle import UUID, AssignedNumbers, Peripheral
 from kalman import Kalman
-from src.dcm import DcmAlgorithm
 
 # Sensortag versions
 AUTODETECT = "-"
@@ -210,20 +209,14 @@ class SensorTag(Peripheral):
         else:
             self.firmwareVersion = ""
 
-        if version == SENSORTAG_V1:
-            self.accelerometer = AccelerometerSensor(self)
-            self.magnetometer = MagnetometerSensor(self)
-            self.gyroscope = GyroscopeSensor(self)
-        elif version == SENSORTAG_2650:
-            self._mpu9250 = MovementSensorMPU9250(self)
-            self.accelerometer = AccelerometerSensorMPU9250(self._mpu9250)
-            self.magnetometer = MagnetometerSensorMPU9250(self._mpu9250)
-            self.gyroscope = GyroscopeSensorMPU9250(self._mpu9250)
-            self.battery = BatterySensor(self)
+        self._mpu9250 = MovementSensorMPU9250(self)
+        self.accelerometer = AccelerometerSensorMPU9250(self._mpu9250)
+        self.magnetometer = MagnetometerSensorMPU9250(self._mpu9250)
+        self.gyroscope = GyroscopeSensorMPU9250(self._mpu9250)
+        self.battery = BatterySensor(self)
 
 
 def main():
-    # sensorfusion = DcmAlgorithm()
     sensorfusion = Kalman()
 
     print("Connecting to sensortag...")
@@ -233,31 +226,28 @@ def main():
     tag.accelerometer.enable()
     tag.magnetometer.enable()
     tag.gyroscope.enable()
+    tag.battery.enable()
 
     time.sleep(1.0)  # Loading sensors
 
     prev_time = time.time()
     while True:
-        ax, ay, az = tag.accelerometer.read()
-        gx, gy, gz = tag.gyroscope.read()
-        mx, my, mz = tag.magnetometer.read()
+        accelerometer_readings = tag.accelerometer.read()
+        gyroscope_readings = tag.gyroscope.read()
+        magnetometer_readings = tag.magnetometer.read()
+
+        ax, ay, az = accelerometer_readings
+        gx, gy, gz = gyroscope_readings
+        mx, my, mz = magnetometer_readings
 
         curr_time = time.time()
         dt = curr_time - prev_time
 
-        # sensorfusion.update(dt, gx, gy, gz, ax, ay, az, mx, my, mz)
-        sensorfusion.computeAndUpdateRollPitchYaw(ax, ay, az, gx, gy, gz, mx, my, mz, dt)
-
-        # print(
-        #     "roll:{0} pitch:{1} yaw:{2} ".format(
-        #         sensorfusion.getRoll(), sensorfusion.getPitch(), sensorfusion.getYaw()
-        #     )
-        # )
-        print(
-            "roll:{0} pitch:{1} yaw:{2} ".format(
-                sensorfusion.roll, sensorfusion.pitch, sensorfusion.yaw
-            )
+        sensorfusion.computeAndUpdateRollPitchYaw(
+            ax, ay, az, gx, gy, gz, mx, my, mz, dt
         )
+
+        print(f"dt: {dt} pitch: {sensorfusion.pitch}")
 
         prev_time = curr_time
 
