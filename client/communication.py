@@ -1,4 +1,5 @@
 import struct
+import threading
 import time
 
 from bluepy.btle import UUID, AssignedNumbers, Peripheral
@@ -214,6 +215,64 @@ class SensorTag(Peripheral):
         self.magnetometer = MagnetometerSensorMPU9250(self._mpu9250)
         self.gyroscope = GyroscopeSensorMPU9250(self._mpu9250)
         self.battery = BatterySensor(self)
+
+
+class BlueToothThreading:
+    """ 
+    Bluetooth Threading
+    The run() method will be started and it will run in the background
+    until the application exits.
+    """
+
+    def __init__(self, interval=1):
+        """ Constructor
+        :type interval: int
+        :param interval: Check interval, in seconds
+        """
+        self.sensorfusion = Kalman()
+
+        print("Connecting to sensortag...")
+        self.tag = SensorTag(macAddress)
+        print("connected.")
+
+        self.tag.accelerometer.enable()
+        self.tag.magnetometer.enable()
+        self.tag.gyroscope.enable()
+        self.tag.battery.enable()
+
+        self.pitch = 0
+
+        time.sleep(1.0)  # Loading sensors
+
+        self.prev_time = time.time()
+
+        thread = threading.Thread(target=self.run, args=())
+        thread.daemon = True  # Daemonize thread
+        thread.start()  # Start the execution
+
+    def run(self):
+        """ Method that runs forever """
+        while True:
+            accelerometer_readings = self.tag.accelerometer.read()
+            gyroscope_readings = self.tag.gyroscope.read()
+            magnetometer_readings = self.tag.magnetometer.read()
+
+            ax, ay, az = accelerometer_readings
+            gx, gy, gz = gyroscope_readings
+            mx, my, mz = magnetometer_readings
+
+            curr_time = time.time()
+            dt = curr_time - self.prev_time
+
+            self.sensorfusion.computeAndUpdateRollPitchYaw(
+                ax, ay, az, gx, gy, gz, mx, my, mz, dt
+            )
+
+            self.pitch = self.sensorfusion.pitch
+
+            self.prev_time = curr_time
+
+        print("Battery: ", self.tag.battery.read())
 
 
 def main():

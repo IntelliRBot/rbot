@@ -2,7 +2,9 @@ import json
 import time
 
 import paho.mqtt.client as mqtt
-from constants import (PREDICT_DONE, PREDICT_START, PREDICT_STOP, TRAIN_DONE,
+from communication import BlueToothThreading
+from constants import (DEBUG_DONE, DEBUG_START, DEBUG_STOP, PREDICT_DONE,
+                       PREDICT_START, PREDICT_STOP, TRAIN_DONE,
                        TRAIN_SAVE_MODEL, TRAIN_SAVE_MODEL_DONE, TRAIN_START,
                        TRAIN_STOP)
 
@@ -14,6 +16,9 @@ CLIENT_CRT = f"/home/{USERNAME}/secrets/client.crt"
 CLIENT_KEY = f"/home/{USERNAME}/secrets/client.key"
 BROKER_IP = "192.168.50.190"  # "192.168.50.247" # IP of raspi
 IS_SHUTDOWN = False
+IS_DEBUG = False
+
+t_bluetooth = BlueToothThreading()
 
 
 def on_connect(client, userdata, flags, rc):
@@ -38,6 +43,7 @@ def predict_model():
 
 def on_message(client, userdata, msg):
     global IS_SHUTDOWN
+    global IS_DEBUG
     payload = json.loads(msg.payload)
     if payload == TRAIN_STOP:
         IS_SHUTDOWN = True
@@ -60,6 +66,16 @@ def on_message(client, userdata, msg):
     if payload == PREDICT_STOP:
         IS_SHUTDOWN = True
 
+    if payload == DEBUG_START:
+        IS_DEBUG = True
+        payload = DEBUG_DONE
+        client.publish("/robot/status", json.dumps(payload))
+
+    if payload == DEBUG_STOP:
+        IS_DEBUG = False
+        payload = DEBUG_DONE
+        client.publish("/robot/status", json.dumps(payload))
+
 
 def setup(hostname):
     client = mqtt.Client()
@@ -75,6 +91,9 @@ def setup(hostname):
 def main():
     setup(BROKER_IP)
     while True:
+        if IS_DEBUG:
+            print(t_bluetooth.pitch)
+            time.sleep(0.3)
         if IS_SHUTDOWN:
             print("Shutting down")
             time.sleep(3)

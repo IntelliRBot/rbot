@@ -19,6 +19,7 @@ pip install -r requirements.txt
 
 ### Run
 ```
-python3.7 main.py --train t # train 
-python3.7 main.py # predict
+python3.7 main.py -action train   # train 
+python3.7 main.py -action predict # predict
+python3.7 main.py -action debug   # debug
 ```

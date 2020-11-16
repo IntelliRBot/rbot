@@ -3,7 +3,8 @@ import json
 import time
 
 import paho.mqtt.client as mqtt
-from constants import (PREDICT_DONE, PREDICT_START, PREDICT_STOP, TRAIN_DONE,
+from constants import (DEBUG_DONE, DEBUG_START, DEBUG_STOP, PREDICT_DONE,
+                       PREDICT_START, PREDICT_STOP, TRAIN_DONE,
                        TRAIN_SAVE_MODEL, TRAIN_SAVE_MODEL_DONE, TRAIN_START,
                        TRAIN_STOP)
 
@@ -32,6 +33,8 @@ def on_message(client, userdata, msg):
         print("Done saving model")
     if payload == PREDICT_DONE:
         print("Done starting prediction")
+    if payload == DEBUG_DONE:
+        print("Done setting debugging command")
 
 
 def setup(hostname):
@@ -86,22 +89,39 @@ def predict_loop(client):
                 break
 
 
-def main(is_train):
+def debug_loop(client):
+    is_debug = False
+    while True:
+        if not is_debug:
+            x = input(f"Start debugging [y/N]\n")
+            if x == "" or x == "y":
+                payload = DEBUG_START
+                client.publish("/robot/action", json.dumps(payload))
+                is_debug = True
+
+        if is_debug:
+            x = input(f"Stop debugging [y/N]\n")
+            if x == "" or x == "y":
+                payload = DEBUG_STOP
+                client.publish("/robot/action", json.dumps(payload))
+                is_debug = False
+
+
+def main(action):
     print("Connecting to broker")
     client = setup(BROKER_IP)
     print("connected")
     time.sleep(1)
-    if is_train:
+    if action == "train":
         train_loop(client)
-    else:
+    if action == "predict":
         predict_loop(client)
+    if action == "debug":
+        debug_loop(client)
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--train", help="train or predict model")
+    parser.add_argument("-action", help="train, predict, or debug")
     args = parser.parse_args()
-    if args.train:
-        main(True)
-    else:
-        main(False)
+    main(args.action)
