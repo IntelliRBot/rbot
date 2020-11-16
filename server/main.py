@@ -1,7 +1,11 @@
+import argparse
 import json
 import time
 
 import paho.mqtt.client as mqtt
+from constants import (PREDICT_DONE, PREDICT_START, PREDICT_STOP, TRAIN_DONE,
+                       TRAIN_SAVE_MODEL, TRAIN_SAVE_MODEL_DONE, TRAIN_START,
+                       TRAIN_STOP)
 
 USERID = "nwjbrandon"
 PASSWORD = "password"
@@ -15,18 +19,19 @@ BROKER_IP = "192.168.50.190"  # "192.168.50.247" # IP of raspi
 def on_connect(client, userdata, flags, rc):
     if rc == 0:
         print("Connected")
-        client.subscribe("/episode/status")
+        client.subscribe("/robot/status")
     else:
         print("Failed to connect. Error code: %d." % rc)
 
 
 def on_message(client, userdata, msg):
     payload = json.loads(msg.payload)
-    print(payload)
-    if payload["episode_status"] == 1:
-        print("Episode Done")
-    else:
-        print("Error in episode")
+    if payload == TRAIN_DONE:
+        print("Done training")
+    if payload == TRAIN_SAVE_MODEL_DONE:
+        print("Done saving model")
+    if payload == PREDICT_DONE:
+        print("Done starting prediction")
 
 
 def setup(hostname):
@@ -40,24 +45,63 @@ def setup(hostname):
     return client
 
 
-def main():
-    client = setup(BROKER_IP)
+def train_loop(client):
     episode = 1
-    print("Connecting to broker")
-    time.sleep(3)
     while True:
-        x = input(f"Start Episode {episode} [y/N]\n")
+        x = input(f"Next episode {episode} [y/N]\n")
         if x == "" or x == "y":
-            payload = {"train_status": 1}
-            client.publish("/train/status", json.dumps(payload))
+            payload = TRAIN_START
+            client.publish("/robot/action", json.dumps(payload))
             episode += 1
         else:
-            payload = {"train_status": 0}
-            client.publish("/train/status", json.dumps(payload))
+            payload = TRAIN_STOP
+            client.publish("/robot/action", json.dumps(payload))
             print("Shutting down")
             time.sleep(3)
             break
 
+        x = input(f"Save model {episode} [y/N]\n")
+        if x == "" or x == "y":
+            payload = TRAIN_SAVE_MODEL
+            client.publish("/robot/action", json.dumps(payload))
+
+
+def predict_loop(client):
+    is_start = False
+    while True:
+        if not is_start:
+            x = input(f"Start [y/N]\n")
+            if x == "" or x == "y":
+                payload = PREDICT_START
+                client.publish("/robot/action", json.dumps(payload))
+                is_start = True
+
+        if is_start:
+            x = input(f"Stop [y/N]\n")
+            if x == "" or x == "y":
+                payload = PREDICT_STOP
+                client.publish("/robot/action", json.dumps(payload))
+                print("Shutting down")
+                time.sleep(3)
+                break
+
+
+def main(is_train):
+    print("Connecting to broker")
+    client = setup(BROKER_IP)
+    print("connected")
+    time.sleep(1)
+    if is_train:
+        train_loop(client)
+    else:
+        predict_loop(client)
+
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--train", help="train or predict model")
+    args = parser.parse_args()
+    if args.train:
+        main(True)
+    else:
+        main(False)
