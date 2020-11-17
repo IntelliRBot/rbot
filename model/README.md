@@ -1,4 +1,4 @@
-## DDQN Implementation with
+## DDQN Implementation
 
 ### Setup
 ```
@@ -10,9 +10,13 @@ pip install -r requirements.txt
 ```
 
 ### Models
-- DDQN (dqqn.py)
+The models can be run individually, although you will need to integrate them with the proper environment (Gazebo and RBot itself), with the exception of CartPole models.
+
+- DDQN for CartPoleV1 (dqqn.py)
 - Quantized DDQN for CartPoleV1 on TFLite (dqqn_quantized_cartpole.py)
 - Quantized DDQN for Gazebo on TFLite (dqqn_quantized_gazebo.py)
+- Quantized DDQN for RBot on TFLite (dqqn_quantized_rbot.py)
+
 ```
 python <filename>
 ```

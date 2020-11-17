@@ -1,6 +1,9 @@
 import gym
 from gym import spaces
 
+import numpy as np
+import random
+
 # gym env for RBot
 # integrates with TI SensorTag for getting data
 
@@ -51,7 +54,7 @@ class RBotEnv(gym.Env):
     # The different modes for RBot
     metadata = {'render.modes': ['human']}
 
-    def __init__(self, arg1, arg2, ...):
+    def __init__(self):
         super(RBotEnv, self).__init__()
 
         # Values to keep track
@@ -76,7 +79,6 @@ class RBotEnv(gym.Env):
         self.observation_space = spaces.Box(-high, high, dtype=np.float32)
 
         self.viewer = None
-        self.state = None
 
         self.steps_beyond_done = None
 
@@ -94,10 +96,15 @@ class RBotEnv(gym.Env):
         # self.angular_velocity = SensorTag.get_angular_velocity()
         # self.linear_velocity = SensorTag.get_linear_velocity()
 
+        # Placeholder code, use randrange to edit the state values
+        self.pitch_data += random.randrange(-5, 5)
+        self.angular_velocity += random.randrange(-5, 5)
+        self.linear_velocity += random.randrange(-5, 5)
+
         # Check against Episode Termination, which is pitch_data exceeding 45 degrees
         done = bool(
-            pitch_data < -self.pitch_data_threshold
-            or pitch_data > self.pitch_data_threshold
+            self.pitch_data < -self.pitch_data_threshold
+            or self.pitch_data > self.pitch_data_threshold
         )
 
         if not done:
