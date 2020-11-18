@@ -277,6 +277,7 @@ class BlueToothThreading:
             self.angular_velocity = dp / dt
             self.linear_velocity = da * dt
             self.pitch = self.sensorfusion.pitch
+            self.acceleration = ax
             self.prev_time = curr_time
 
         print("Battery: ", self.tag.battery.read())

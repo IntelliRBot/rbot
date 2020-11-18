@@ -9,6 +9,7 @@ mosquitto
 ### Python3.7
 ```
 sudo apt install python3.7 python3.7-dev python3-pip
+sudo apt-get install libatlas-base-dev
 python3.7 -m pip install virtualenv
 python3.7 -m virtualenv env
 python3.7 -m pip install --upgrade pip

@@ -2,6 +2,7 @@ import json
 import time
 
 import paho.mqtt.client as mqtt
+from motor import Motor
 from communication import BlueToothThreading
 from constants import (DEBUG_DONE, DEBUG_START, DEBUG_STOP, PREDICT_DONE,
                        PREDICT_START, PREDICT_STOP, TRAIN_DONE,
@@ -9,15 +10,15 @@ from constants import (DEBUG_DONE, DEBUG_START, DEBUG_STOP, PREDICT_DONE,
                        TRAIN_STOP)
 from ddqn import DoubleDQNAgent
 from dqn import DQNAgent
-from motor import Motor
 
 USERID = "nwjbrandon"
 PASSWORD = "password"
-USERNAME = "nwjbrandon"
+USERNAME = "pi"
 CA_PEM = f"/home/{USERNAME}/secrets/ca.pem"
 CLIENT_CRT = f"/home/{USERNAME}/secrets/client.crt"
 CLIENT_KEY = f"/home/{USERNAME}/secrets/client.key"
-BROKER_IP = "192.168.50.190"  # "192.168.50.247" # IP of raspi
+# BROKER_IP = "192.168.50.190"  # laptop ip
+BROKER_IP = "192.168.50.247" # rpi ip
 IS_SHUTDOWN = False
 IS_DEBUG = False
 
@@ -69,11 +70,11 @@ def predict_model():
             print("score:",score)
             break
 
-
 def on_message(client, userdata, msg):
     global IS_SHUTDOWN
     global IS_DEBUG
     payload = json.loads(msg.payload)
+    print(payload)
     if payload == TRAIN_STOP:
         IS_SHUTDOWN = True
 
@@ -109,8 +110,8 @@ def on_message(client, userdata, msg):
 def setup(hostname):
     client = mqtt.Client()
     client.connect(hostname, 1883, 60)
-    client.username_pw_set(USERID, PASSWORD)
-    client.tls_set(CA_PEM, CLIENT_CRT, CLIENT_KEY)
+    # client.username_pw_set(USERID, PASSWORD)
+    # client.tls_set(CA_PEM, CLIENT_CRT, CLIENT_KEY)
     client.on_connect = on_connect
     client.on_message = on_message
     client.loop_start()
