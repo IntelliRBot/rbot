@@ -64,7 +64,7 @@ def train_model():
         motor.set_direction(action)
         next_state = get_state()
         
-        done = (abs(state[0]) > PITCH_DATA_THRESHOLD)
+        done = (abs(state[0][0]) > PITCH_DATA_THRESHOLD)
 
         next_state = np.reshape(next_state, [1, STATE_SIZE])
 
@@ -127,7 +127,7 @@ def predict_model():
         score += 1
         state = next_state
 
-        if abs(state[0]) > PITCH_DATA_THRESHOLD or score >= 500:
+        if abs(state[0][0]) > PITCH_DATA_THRESHOLD or score >= 500:
             print("score:",score)
             break
 
