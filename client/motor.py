@@ -1,8 +1,8 @@
 import RPi.GPIO as GPIO
 
 FORWARD = 1
-STOP = 0
-BACKWARD = -1
+STOP = -1
+BACKWARD = 0
 
 Motor1A = 13
 Motor1B = 11
