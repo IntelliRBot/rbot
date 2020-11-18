@@ -47,7 +47,6 @@ def predict_model():
     # get size of state and action from environment
     state_size = 4
     action_size = 2
-
     agent = DoubleDQNAgent(state_size, action_size, load_model=True)
 
     done = False
@@ -62,14 +61,15 @@ def predict_model():
         action = agent.get_action(state)
         motor.set_direction(action)
         next_state = t_bluetooth.take_observation()
+        print(next_state)
         next_state = np.reshape(next_state, [1, state_size])
 
         score += 1
         state = next_state
 
-        if abs(state[0][0]) > 0.4 or score >= 500:
-            print("score:",score)
-            break
+        # if abs(state[0][0]) > 0.4 or score >= 500:
+        #    print("score:",score)
+        #    break
 
 def on_message(client, userdata, msg):
     global IS_SHUTDOWN

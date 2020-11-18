@@ -9,7 +9,7 @@ Motor1A = 12
 Motor1B = 32
 
 FREQ = 100
-DC = 25
+DC = 15
 
 class Motor:
     def __init__(self):

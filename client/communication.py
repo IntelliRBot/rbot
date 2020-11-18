@@ -270,13 +270,14 @@ class BlueToothThreading:
             self.sensorfusion.computeAndUpdateRollPitchYaw(
                 ax, ay, az, gx, gy, gz, mx, my, mz, dt
             )
+            pitch = self.sensorfusion.pitch * 0.0174533
 
-            dp = self.sensorfusion.pitch - self.pitch
+            dp = pitch - self.pitch
             da = ax - self.acceleration
 
             self.angular_velocity = dp / dt
             self.linear_velocity = da * dt
-            self.pitch = self.sensorfusion.pitch
+            self.pitch = pitch
             self.acceleration = ax
             self.prev_time = curr_time
 
