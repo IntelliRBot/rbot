@@ -1,14 +1,15 @@
 import RPi.GPIO as GPIO
+import time
 
 FORWARD = 1
 STOP = -1
 BACKWARD = 0
 
-Motor1A = 13
-Motor1B = 11
-Motor2A = 16
-Motor2B = 18
+Motor1A = 12
+Motor1B = 32
 
+FREQ = 100
+DC = 25
 
 class Motor:
     def __init__(self):
@@ -16,32 +17,25 @@ class Motor:
 
         GPIO.setup(Motor1A, GPIO.OUT, initial=GPIO.LOW)
         GPIO.setup(Motor1B, GPIO.OUT, initial=GPIO.LOW)
-        GPIO.setup(Motor2A, GPIO.OUT, initial=GPIO.LOW)
-        GPIO.setup(Motor2B, GPIO.OUT, initial=GPIO.LOW)
+
+        self.pwm1a = GPIO.PWM(Motor1A, FREQ)
+        self.pwm1b = GPIO.PWM(Motor1B, FREQ)
 
     def _forward(self):
         print("Forward")
-        GPIO.output(Motor1A, GPIO.HIGH)
-        GPIO.output(Motor1B, GPIO.LOW)
-
-        GPIO.output(Motor2A, GPIO.LOW)
-        GPIO.output(Motor2B, GPIO.HIGH)
+        self.pwm1a.start(DC)
+        self.pwm1b.start(0)
+        
 
     def _backward(self):
         print("Backward")
-        GPIO.output(Motor1A, GPIO.LOW)
-        GPIO.output(Motor1B, GPIO.HIGH)
-
-        GPIO.output(Motor2A, GPIO.HIGH)
-        GPIO.output(Motor2B, GPIO.LOW)
+        self.pwm1a.start(0)
+        self.pwm1b.start(DC)
 
     def _stop(self):
         print("Stop")
-        GPIO.output(Motor1A, GPIO.LOW)
-        GPIO.output(Motor1B, GPIO.LOW)
-
-        GPIO.output(Motor2A, GPIO.LOW)
-        GPIO.output(Motor2B, GPIO.LOW)
+        self.pwm1a.start(0)
+        self.pwm1b.start(0)
 
     def cleanup(self):
         print("Clean up")
@@ -54,3 +48,23 @@ class Motor:
             self._stop()
         if direction == BACKWARD:
             self._backward()
+
+
+def main():
+    motor = Motor()
+    while True:
+        motor.set_direction(1)
+        time.sleep(3)
+
+        motor.set_direction(-1)
+        time.sleep(3)
+
+        motor.set_direction(0)
+        time.sleep(3)
+
+        motor.set_direction(-1)
+        time.sleep(3)
+    motor.cleanup()
+
+if __name__ == "__main__":
+    main()
