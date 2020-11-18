@@ -10,6 +10,7 @@ from constants import (DEBUG_DONE, DEBUG_START, DEBUG_STOP, PREDICT_DONE,
                        TRAIN_STOP)
 from ddqn import DoubleDQNAgent
 from dqn import DQNAgent
+import numpy as np
 
 USERID = "nwjbrandon"
 PASSWORD = "password"
@@ -18,7 +19,7 @@ CA_PEM = f"/home/{USERNAME}/secrets/ca.pem"
 CLIENT_CRT = f"/home/{USERNAME}/secrets/client.crt"
 CLIENT_KEY = f"/home/{USERNAME}/secrets/client.key"
 # BROKER_IP = "192.168.50.190"  # laptop ip
-BROKER_IP = "192.168.50.247" # rpi ip
+BROKER_IP = "192.168.50.247" # rpi ip 
 IS_SHUTDOWN = False
 IS_DEBUG = False
 
@@ -66,7 +67,7 @@ def predict_model():
         score += 1
         state = next_state
 
-        if abs(state[0]) > 0.4 or score >= 500:
+        if abs(state[0][0]) > 0.4 or score >= 500:
             print("score:",score)
             break
 
