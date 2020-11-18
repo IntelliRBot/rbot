@@ -16,6 +16,11 @@ source env/bin/activate
 pip install -r requirements.txt
 ```
 
+### Download models
+```
+https://cs3237-rbot.s3-ap-southeast-1.amazonaws.com/ros_dqn.zip
+```
+
 ### Run
 ```
 python main.py
