@@ -27,12 +27,14 @@ CLIENT_KEY = f"/home/{USERNAME}/secrets/client.key"
 BROKER_IP = "192.168.50.247" # rpi ip
 IS_SHUTDOWN = False
 IS_DEBUG = False
+IS_CALIBRATED = False # calibrate for idle values in state
 
 motor = Motor()
 t_bluetooth = BlueToothThreading()
 
 agent, e = None, None
 scores, episodes = [], []
+calibration = []
 
 def on_connect(client, userdata, flags, rc):
     if rc == 0:
@@ -40,9 +42,6 @@ def on_connect(client, userdata, flags, rc):
         client.subscribe("/robot/action")
     else:
         print("Connection failed with code: %d" % rc)
-
-def reset():
-    return t_bluetooth.take_observation()
 
 def setup_train():
     agent = DoubleDQNAgentQuant(STATE_SIZE, ACTION_SIZE, mode="train")
@@ -56,14 +55,14 @@ def train_model():
     done = False
     score = 0
 
-    state = reset()
+    state = get_state()
     state = np.reshape(state, [1, STATE_SIZE])
 
     while not done:
         # get action for the current state and go one step in environment
         action = agent.get_action(state)
         motor.set_direction(action)
-        next_state = t_bluetooth.take_observation()
+        next_state = get_state()
         
         done = (abs(state[0]) > PITCH_DATA_THRESHOLD)
 
@@ -115,14 +114,14 @@ def predict_model():
     done = False
     score = 0
 
-    state = reset()
+    state = get_state()
     state = np.reshape(state, [1, STATE_SIZE])
 
     while not done:
         # get action for the current state and go one step in environment
         action = agent.get_action(state)
         motor.set_direction(action)
-        next_state = t_bluetooth.take_observation()
+        next_state = get_state()
         next_state = np.reshape(next_state, [1, STATE_SIZE])
 
         score += 1
@@ -184,11 +183,40 @@ def setup(hostname):
     client.loop_start()
     return client
 
+def get_state():
+    if IS_CALIBRATED:
+        return t_bluetooth.take_observation_calibrated(calibration)
+    else:
+        return t_bluetooth.take_observation()
+
+# take average value of idle state over 5s to calibrate
+def calibrate_state():
+    state_value_0 = 0.0 # pitch
+    state_value_1 = 0.0 # angular_velocity 
+    state_value_2 = 0.0 # linear_velocity 
+    state_value_3 = 0.0 # self.acceleration
+
+    for i in range(5):
+        temp_state = t_bluetooth.take_observation()
+        state_value_0 = state_value_0 + temp_state[0] / 5
+        state_value_1 = state_value_1 + temp_state[1] / 5
+        state_value_2 = state_value_2 + temp_state[2] / 5
+        state_value_3 = state_value_3 + temp_state[3] / 5
+        time.sleep(1)
+
+    calibration.append(state_value_0)
+    calibration.append(state_value_1)
+    calibration.append(state_value_2)
+    calibration.append(state_value_3)
+
 def main():
     setup(BROKER_IP)
+    if IS_CALIBRATED:
+        calibrate_state()
+
     while True:
         if IS_DEBUG:
-            print(t_bluetooth.take_observation())
+            print(get_state())
             time.sleep(0.3)
         if IS_SHUTDOWN:
             print("Shutting down")

@@ -285,6 +285,12 @@ class BlueToothThreading:
     def take_observation(self):
         return [self.pitch, self.angular_velocity, self.linear_velocity, self.acceleration]
 
+    # return observation with manual calbiration
+    # expects list of length STATE_SIZE
+    def take_observation_calibrated(self, calibration):
+                return [self.pitch - calibration[0], self.angular_velocity - calibration[1], 
+                        self.linear_velocity - calibration[2], self.acceleration - calibration[3]]
+
 
 def main():
     sensorfusion = Kalman()
