@@ -241,6 +241,9 @@ class BlueToothThreading:
         self.tag.battery.enable()
 
         self.pitch = 0
+        self.angular_velocity = 0
+        self.linear_velocity = 0
+        self.acceleration = 0
 
         time.sleep(1.0)  # Loading sensors
 
@@ -248,7 +251,7 @@ class BlueToothThreading:
 
         thread = threading.Thread(target=self.run, args=())
         thread.daemon = True  # Daemonize thread
-        thread.start()  # Start the execution
+        thread.start()  # Start the execution      
 
     def run(self):
         """ Method that runs forever """
@@ -268,11 +271,18 @@ class BlueToothThreading:
                 ax, ay, az, gx, gy, gz, mx, my, mz, dt
             )
 
-            self.pitch = self.sensorfusion.pitch
+            dp = self.sensorfusion.pitch - self.pitch
+            da = ax - self.acceleration
 
+            self.angular_velocity = dp / dt
+            self.linear_velocity = da * dt
+            self.pitch = self.sensorfusion.pitch
             self.prev_time = curr_time
 
         print("Battery: ", self.tag.battery.read())
+
+    def take_observation(self):
+        return [self.pitch, self.angular_velocity, self.linear_velocity, self.acceleration]
 
 
 def main():
