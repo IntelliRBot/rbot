@@ -9,6 +9,7 @@ from constants import (DEBUG_DONE, DEBUG_START, DEBUG_STOP, PREDICT_DONE,
                        TRAIN_STOP)
 from ddqn import DoubleDQNAgent
 from dqn import DQNAgent
+from motor import Motor
 
 USERID = "nwjbrandon"
 PASSWORD = "password"
@@ -20,6 +21,7 @@ BROKER_IP = "192.168.50.190"  # "192.168.50.247" # IP of raspi
 IS_SHUTDOWN = False
 IS_DEBUG = False
 
+motor = Motor()
 t_bluetooth = BlueToothThreading()
 
 
@@ -56,7 +58,7 @@ def predict_model():
     while not done:
         # get action for the current state and go one step in environment
         action = agent.get_action(state)
-        # TODO: GPIO
+        motor.set_direction(action)
         next_state = t_bluetooth.take_observation()
         next_state = np.reshape(next_state, [1, state_size])
 
@@ -125,6 +127,7 @@ def main():
             print("Shutting down")
             time.sleep(3)
             break
+    motor.cleanup()
 
 
 if __name__ == "__main__":
