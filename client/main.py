@@ -10,6 +10,7 @@ from constants import (DEBUG_DONE, DEBUG_START, DEBUG_STOP, PREDICT_DONE,
                        TRAIN_STOP)
 from ddqn import DoubleDQNAgent
 from dqn import DQNAgent
+from quantized_models import DQNAgent_quant, DoubleDQNAgent_quant
 import numpy as np
 
 USERID = "nwjbrandon"
@@ -47,7 +48,9 @@ def predict_model():
     # get size of state and action from environment
     state_size = 4
     action_size = 2
-    agent = DoubleDQNAgent(state_size, action_size, load_model=True)
+    #agent = DoubleDQNAgent(state_size, action_size, load_model=True)
+    #agent = DQNAgent(state_size, action_size, load_model=True)
+    agent = DQNAgent_quant()
 
     done = False
     score = 0
