@@ -26,3 +26,8 @@ https://cs3237-rbot.s3-ap-southeast-1.amazonaws.com/ros_dqn.zip
 ```
 python main.py
 ```
+
+### Troubleshoot
+```
+https://stackoverflow.com/questions/59505609/hadoopfilesystem-load-error-during-tensorflow-installation-on-raspberry-pi3
+```

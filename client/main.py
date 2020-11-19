@@ -121,8 +121,10 @@ def predict_model():
         # get action for the current state and go one step in environment
         action = agent.get_action(state)
         motor.set_direction(action)
+        
         next_state = get_state()
-        next_state = np.reshape(next_state, [1, STATE_SIZE])
+        print(next_state)
+        next_state = np.reshape(next_state, [1, STATE_SIZE
 
         score += 1
         state = next_state
