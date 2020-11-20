@@ -50,7 +50,7 @@ def on_connect(client, userdata, flags, rc):
         print("Connection failed with code: %d" % rc)
 
 def setup_train():
-    agent = DoubleDQNAgentQuant(STATE_SIZE, ACTION_SIZE, mode="train")
+    #agent = DoubleDQNAgentQuant(STATE_SIZE, ACTION_SIZE, mode="train")
     scores, episodes = [], []
     e = 0
 
@@ -177,7 +177,8 @@ def train_model_remote():
     #agent.save_quant_model()
 
 def setup_predict():
-    agent = DoubleDQNAgentQuant(STATE_SIZE, ACTION_SIZE, load_model=True, mode="eval")
+    #agent = DoubleDQNAgentQuant(STATE_SIZE, ACTION_SIZE, load_model=True, mode="eval")
+    print("predict not setup")
 
 def predict_model():
     if agent == None and agent.mode != "eval":
@@ -282,13 +283,15 @@ def calibrate_state():
     calibration.append(state_value_3)
 
 def main():
-    if ()
-    setup(BROKER_IP)
+    #setup(BROKER_IP)
     if IS_CALIBRATED:
         calibrate_state()
 
     rbot_socket.connect(HOST_IP, TCP_PORT)
 
+    setup_train()
+    train_model_remote()
+    """
     while True:
         if IS_DEBUG:
             print(get_state())
@@ -297,6 +300,7 @@ def main():
             print("Shutting down")
             time.sleep(3)
             break
+    """
     motor.cleanup()
 
 if __name__ == "__main__":

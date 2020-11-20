@@ -14,8 +14,10 @@ import os
 
 import time
 
-from constants import (MODEL_NAME, MODEL_DIR, MODEL_PATH)
+from constants import (MODEL_NAME, MODEL_DIR, MODEL_PATH, 
+                    STATE_SIZE, ACTION_SIZE, PITCH_DATA_THRESHOLD)
 
+from rbot_socket import RBotSocket
 
 ####################################################################################################
 # Double DQN Agent for RBot
@@ -27,6 +29,10 @@ from constants import (MODEL_NAME, MODEL_DIR, MODEL_PATH)
 # is created afterwards
 # see https://www.tensorflow.org/model_optimization/guide/quantization/training_example
 ####################################################################################################
+
+RPI_IP = "10.100.135.104"
+TCP_PORT = 3000
+rbot_socket = RBotSocket()
 
 class DoubleDQNAgentQuant:
     def __init__(self, state_size, action_size, render=False, load_model=False, mode="null"):
@@ -213,3 +219,62 @@ class DoubleDQNAgentQuant:
             print("For reference, quantized model takes {:3f}% ".format((quant_model_size_mb / model_size_mb)))
             print("Float model in Mb:", os.path.getsize("ddqn_regular.tflite") / float(2**20))
             print("Quantized model in Mb:", os.path.getsize("ddqn_quant.tflite") / float(2**20))
+
+def main():
+    rbot_socket.connect(RPI_IP, TCP_PORT)
+
+    agent = DoubleDQNAgentQuant(STATE_SIZE, ACTION_SIZE, mode="train")
+    scores, episodes = [], []
+    e = 0
+
+    while (1):
+        print("waiting for data")
+        data0, data1, data2, data3 = rbot_socket.recvState()
+        state = [data0, data1, data2, data3]
+
+        action = agent.get_action(state)
+
+        done = (abs(state[0]) > PITCH_DATA_THRESHOLD)
+
+        if not done:
+            reward = 1.0
+        else:
+            reward = 0.0
+
+        # if an action make the episode end, then gives penalty of -100
+        reward = reward if not done or score == 499 else -100
+
+        # save the sample <s, a, r, s'> to the replay memory
+        agent.append_sample(state, action, reward, next_state, done)
+        # every time step do the training
+        agent.train_model()
+        score += reward
+        state = next_state
+
+        # update and save the model
+        if done:
+            # every episode update the target model to be same with model
+            agent.update_target_model()
+
+            # every episode, plot the play time
+            score = score if score == 500 else score + 100
+            scores.append(score)
+            episodes.append(e)
+            pylab.plot(episodes, scores, "b")
+            pylab.savefig("./saved_graph/cartpole_" + MODEL_NAME +".png")
+            print(
+                "episode:",
+                e,
+                " score:",
+                score,
+                " memory length:",
+                len(agent.memory),
+                " epsilon:",
+                agent.epsilon,
+            )
+
+            agent.save_quant_model()
+
+
+if __name__ == "__main__":
+    main()
