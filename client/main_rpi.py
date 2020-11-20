@@ -26,7 +26,7 @@ CA_PEM = f"/home/{USERNAME}/secrets/ca.pem"
 CLIENT_CRT = f"/home/{USERNAME}/secrets/client.crt"
 CLIENT_KEY = f"/home/{USERNAME}/secrets/client.key"
 # BROKER_IP = "192.168.50.190"  # laptop ip
-BROKER_IP = "192.168.50.247" # rpi ip 
+BROKER_IP = "192.168.50.247" # rpi ip
 IS_SHUTDOWN = False
 IS_DEBUG = False
 IS_CALIBRATED = False # calibrate for idle values in state
@@ -50,7 +50,7 @@ def on_connect(client, userdata, flags, rc):
         print("Connection failed with code: %d" % rc)
 
 def setup_train():
-    agent = DoubleDQNAgentQuant(STATE_SIZE, ACTION_SIZE, mode="train")
+    #agent = DoubleDQNAgentQuant(STATE_SIZE, ACTION_SIZE, mode="train")
     scores, episodes = [], []
     e = 0
 
@@ -177,7 +177,8 @@ def train_model_remote():
     #agent.save_quant_model()
 
 def setup_predict():
-    agent = DoubleDQNAgentQuant(STATE_SIZE, ACTION_SIZE, load_model=True, mode="eval")
+    #agent = DoubleDQNAgentQuant(STATE_SIZE, ACTION_SIZE, load_model=True, mode="eval")
+    print("predict not setup")
 
 def predict_model():
     if agent == None and agent.mode != "eval":
@@ -193,10 +194,8 @@ def predict_model():
         # get action for the current state and go one step in environment
         action = agent.get_action(state)
         motor.set_direction(action)
-        
         next_state = get_state()
-        print(next_state)
-        next_state = np.reshape(next_state, [1, STATE_SIZE
+        next_state = np.reshape(next_state, [1, STATE_SIZE])
 
         score += 1
         state = next_state
@@ -284,13 +283,15 @@ def calibrate_state():
     calibration.append(state_value_3)
 
 def main():
-    if ()
-    setup(BROKER_IP)
+    #setup(BROKER_IP)
     if IS_CALIBRATED:
         calibrate_state()
 
     rbot_socket.connect(HOST_IP, TCP_PORT)
 
+    setup_train()
+    train_model_remote()
+    """
     while True:
         if IS_DEBUG:
             print(get_state())
@@ -299,6 +300,7 @@ def main():
             print("Shutting down")
             time.sleep(3)
             break
+    """
     motor.cleanup()
 
 if __name__ == "__main__":
