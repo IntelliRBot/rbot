@@ -26,7 +26,7 @@ CA_PEM = f"/home/{USERNAME}/secrets/ca.pem"
 CLIENT_CRT = f"/home/{USERNAME}/secrets/client.crt"
 CLIENT_KEY = f"/home/{USERNAME}/secrets/client.key"
 # BROKER_IP = "192.168.50.190"  # laptop ip
-BROKER_IP = "192.168.50.247" # rpi ip
+BROKER_IP = "192.168.50.247" # rpi ip 
 IS_SHUTDOWN = False
 IS_DEBUG = False
 IS_CALIBRATED = False # calibrate for idle values in state
@@ -193,8 +193,10 @@ def predict_model():
         # get action for the current state and go one step in environment
         action = agent.get_action(state)
         motor.set_direction(action)
+        
         next_state = get_state()
-        next_state = np.reshape(next_state, [1, STATE_SIZE])
+        print(next_state)
+        next_state = np.reshape(next_state, [1, STATE_SIZE
 
         score += 1
         state = next_state
